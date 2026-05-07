@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Tower of Hanoi</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:#050816;
+    color:white;
+    font-family:Arial, Helvetica, sans-serif;
+    overflow:hidden;
+}
+
+h1{
+    text-align:center;
+    margin-top:20px;
+    letter-spacing:4px;
+    color:#00ffe1;
+    text-shadow:0 0 15px #00ffe1;
+}
+
+#topbar{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:20px;
+    margin-top:15px;
+    flex-wrap:wrap;
+}
+
+button{
+    padding:10px 20px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    background:#00ffe1;
+    color:#000;
+    font-weight:bold;
+    font-size:16px;
+}
+
+button:hover{
+    transform:scale(1.05);
+}
+
+input{
+    width:200px;
+}
+
+#moves{
+    font-size:22px;
+    color:#fff;
+}
+
+#game{
+    width:100%;
+    height:80vh;
+    position:relative;
+    margin-top:20px;
+}
+
+.base{
+    position:absolute;
+    bottom:50px;
+    width:100%;
+    height:10px;
+    background:#666;
+}
+
+.tower{
+    position:absolute;
+    bottom:50px;
+    width:12px;
+    height:320px;
+    background:#9aa4b2;
+    border-radius:20px;
+    box-shadow:0 0 20px #9aa4b2;
+}
+
+#a{ left:20%; }
+#b{ left:50%; }
+#c{ left:80%; }
+
+.disk{
+    position:absolute;
+    height:32px;
+    border-radius:10px;
+    text-align:center;
+    line-height:32px;
+    font-weight:bold;
+    transition:all 0.5s ease;
+    box-shadow:0 0 20px rgba(255,255,255,0.4);
+}
+
+.label{
+    position:absolute;
+    bottom:10px;
+    font-size:24px;
+    color:#00ffe1;
+}
+
+#la{ left:19.5%; }
+#lb{ left:49.5%; }
+#lc{ left:79.5%; }
+
+</style>
+</head>
+<body>
+
+<h1>TOWER OF HANOI</h1>
+
+<div id="topbar">
+
+    <div id="moves">
+        Movimento: <span id="moveCount">0</span>
+    </div>
+
+    <button onclick="start()">PLAY</button>
+
+    <button onclick="pauseGame()">PAUSE</button>
+
+    <div>
+        Velocidade
+        <input type="range"
+               min="100"
+               max="1000"
+               value="500"
+               id="speed">
+    </div>
+
+</div>
+
+<div id="game">
+
+    <div class="tower" id="a"></div>
+    <div class="tower" id="b"></div>
+    <div class="tower" id="c"></div>
+
+    <div class="base"></div>
+
+    <div class="label" id="la">A</div>
+    <div class="label" id="lb">B</div>
+    <div class="label" id="lc">C</div>
+
+</div>
+
+<script>
+
+const game = document.getElementById("game");
+
+const positions = {
+    A: window.innerWidth * 0.2,
+    B: window.innerWidth * 0.5,
+    C: window.innerWidth * 0.8
+};
+
+const towers = {
+    A: [],
+    B: [],
+    C: []
+};
+
+const totalDisks = 5;
+
+let moves = [];
+let currentMove = 0;
+let running = false;
+
+function createDisks(){
+
+    for(let i=totalDisks;i>=1;i--){
+
+        const disk = document.createElement("div");
+
+        disk.className = "disk";
+
+        disk.id = "disk"+i;
+
+        const width = 70 + i*30;
+
+        disk.style.width = width+"px";
+
+        disk.style.left =
+            (positions.A - width/2)+"px";
+
+        disk.style.bottom =
+            (50 + (totalDisks-i)*35)+"px";
+
+        disk.style.background =
+            `hsl(${i*45}, 80%, 55%)`;
+
+        disk.innerHTML = i;
+
+        game.appendChild(disk);
+
+        towers.A.push(i);
+    }
+}
+
+function solve(n, from, to, via){
+
+    if(n===0) return;
+
+    solve(n-1, from, via, to);
+
+    moves.push([from,to]);
+
+    solve(n-1, via, to, from);
+}
+
+function animate(){
+
+    if(!running) return;
+
+    if(currentMove >= moves.length)
+        return;
+
+    const [from,to] = moves[currentMove];
+
+    const diskNum = towers[from].pop();
+
+    towers[to].push(diskNum);
+
+    const disk =
+        document.getElementById("disk"+diskNum);
+
+    const width = disk.offsetWidth;
+
+    const level =
+        towers[to].length - 1;
+
+    disk.style.left =
+        (positions[to] - width/2)+"px";
+
+    disk.style.bottom =
+        (50 + level*35)+"px";
+
+    currentMove++;
+
+    document.getElementById("moveCount")
+        .innerText = currentMove;
+
+    const speed =
+        document.getElementById("speed").value;
+
+    setTimeout(animate, speed);
+}
+
+function start(){
+
+    if(currentMove >= moves.length)
+        return;
+
+    running = true;
+
+    animate();
+}
+
+function pauseGame(){
+
+    running = false;
+}
+
+createDisks();
+
+solve(totalDisks, "A", "C", "B");
+
+</script>
+
+</body>
+</html>
